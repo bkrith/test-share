@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Share Base64 File</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    button {
+      padding: 1em 2em;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>📤 Share a Base64 File</h1>
+  <p>Tap the button below to share a file created from base64.</p>
+  <button id="shareBtn">Share File</button>
+
+  <script>
+    // Base64-encoded "Hello, Vassilis!" as a text file
+    const base64Data = "data:text/plain;base64,SGVsbG8sIFZhc3NpbGlzIQ==";
+
+    function base64ToBlob(base64) {
+      const parts = base64.split(',');
+      const mime = parts[0].match(/:(.*?);/)[1];
+      const binary = atob(parts[1]);
+      const array = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        array[i] = binary.charCodeAt(i);
+      }
+      return new Blob([array], { type: mime });
+    }
+
+    document.getElementById('shareBtn').addEventListener('click', async () => {
+      const blob = base64ToBlob(base64Data);
+      const file = new File([blob], "hello.txt", { type: blob.type });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: "Base64 File",
+            text: "Here's a file created from base64!",
+            files: [file]
+          });
+          console.log("Share successful");
+        } catch (err) {
+          console.error("Share failed:", err);
+        }
+      } else {
+        alert("File sharing not supported on this device or browser.");
+      }
+    });
+  </script>
+</body>
+</html>
